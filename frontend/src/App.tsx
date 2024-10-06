@@ -1,24 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from 'react';
 import './App.css';
+import TitleBar from './components/TitleBar';
 
 function App() {
+  const [discovering, setDiscovering] = useState(false);
+  const [devices, setDevices] = useState<[{name: string, mac: string, conn_status: string}]>();
+
+  useEffect(() => {
+    fetch(
+      "http://localhost:8080/start_discovery", { 
+        method: "POST",
+      }
+    ).then((response) => {
+      if (response.status === 200) {
+        setDiscovering(true);
+
+        setInterval(() => {
+          fetch(
+            "http://localhost:8080/list_devs", {
+              method: "GET",
+            }
+          ).then(async (response) => {
+            const body = await response.json();
+            setDevices(body);
+          });
+        }, 3000);
+      }
+    });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <TitleBar 
+        isDiscovering={discovering}
+        devices={devices}
+      ></TitleBar>
     </div>
   );
 }
