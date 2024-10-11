@@ -20,8 +20,12 @@ pub struct BtDevice {
 
 #[tokio::main]
 async fn main() {
-    let current_dir = std::env::current_dir().unwrap();
-    let frontend_path = format!("{}/../frontend/build", current_dir.to_str().unwrap());
+    let args = std::env::args().collect::<Vec<String>>();
+    if args.len() != 2 {
+        eprintln!("Args: <path-to-frontend>");
+        std::process::exit(1);
+    }
+    let frontend_path = &args[1];
 
     let (_, session) = BluetoothSession::new().await.expect("Cannot access bluetooth!");
     let app_state = Arc::new(Mutex::new(session));
@@ -32,11 +36,10 @@ async fn main() {
         .route("/stop_discovery", post(stop_discovery))
         .route("/connect_device", post(connect_device))
         .route("/disconnect_device", post(disconnect_device))
-        .nest_service("/", ServeDir::new(std::fs::canonicalize(frontend_path).unwrap()))
+        .nest_service("/", ServeDir::new(frontend_path))
         .with_state(app_state);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8080").await.unwrap();
-    println!("Serving on 127.0.0.1:8080");
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 

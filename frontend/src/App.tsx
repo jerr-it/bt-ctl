@@ -9,7 +9,7 @@ function App() {
 
   useEffect(() => {
     fetch(
-      "http://localhost:8080/start_discovery", { 
+      "/start_discovery", { 
         method: "POST",
       }
     ).then((response) => {
@@ -18,7 +18,7 @@ function App() {
 
         setInterval(() => {
           fetch(
-            "http://localhost:8080/list_devs", {
+            "/list_devs", {
               method: "GET",
             }
           ).then(async (response) => {

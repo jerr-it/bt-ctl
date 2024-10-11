@@ -1,5 +1,5 @@
 import { BluetoothConnected, Close, LinkOutlined } from "@mui/icons-material";
-import { Alert, AlertTitle, Box, Button, ListItem, ListItemAvatar, ListItemText, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, AlertTitle, Box, Button, CircularProgress, ListItem, ListItemAvatar, ListItemText, Snackbar, Stack, Typography } from "@mui/material";
 import BtDevice, { CLASS_ICON_MAP, DEFAULT_ICON } from "../models/bt_device";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
         setConnectionChanging(true);
 
         fetch(
-            "http://localhost:8080/connect_device", { 
+            "/connect_device", { 
                 method: "POST",
                 body: JSON.stringify(mac),
                 headers: { "Content-Type": "application/json" }
@@ -35,7 +35,7 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
         setConnectionChanging(true);
 
         fetch(
-            "http://localhost:8080/disconnect_device", { 
+            "/disconnect_device", { 
                 method: "POST",
                 body: JSON.stringify(mac),
                 headers: { "Content-Type": "application/json" }
@@ -57,10 +57,21 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
     return (
         <ListItem secondaryAction={
             !props.device.connected ? 
-            <Button variant="contained" startIcon={<BluetoothConnected/>} onClick={() => onConnectClick(props.device.mac)} disabled={connectionChanging}>Connect</Button>
-            : <Button variant="contained" startIcon={<Close/>} color="error" onClick={() => onDisconnectClick(props.device.mac)} disabled={connectionChanging}>Disconnect</Button>
+            <Button 
+                variant="contained" 
+                startIcon={connectionChanging ? <CircularProgress size="20px"/> : <BluetoothConnected/>}
+                onClick={() => onConnectClick(props.device.mac)} 
+                disabled={connectionChanging}
+            >Connect</Button>
+            : <Button 
+                variant="contained" 
+                startIcon={connectionChanging ? <CircularProgress size="20px"/> : <Close/>} 
+                color="error" 
+                onClick={() => onDisconnectClick(props.device.mac)} 
+                disabled={connectionChanging}
+            >Disconnect</Button>
         }>
-            <Snackbar open={snackBarState.open} autoHideDuration={3000}>
+            <Snackbar open={snackBarState.open} autoHideDuration={3000} onClose={() => setSnackbarState({open: false, severity: "error", message: ""})}>
                 <Alert severity={snackBarState.severity}>
                     <AlertTitle>{snackBarState.message}</AlertTitle>
                 </Alert>
