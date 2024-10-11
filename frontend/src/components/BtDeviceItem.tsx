@@ -6,8 +6,7 @@ import { useState } from "react";
 
 export default function BtDeviceItem(props: {device: BtDevice }) {
     const [connectionChanging, setConnectionChanging] = useState(false);
-    const [successOpen, setSuccessOpen] = useState(false);
-    const [failureOpen, setFailureOpen] = useState(false);
+    const [snackBarState, setSnackbarState] = useState<{open: boolean, severity: any, message: string}>({open: false, severity: "error", "message": "error"});
 
     const onConnectClick = (mac: string) => {
         setConnectionChanging(true);
@@ -18,16 +17,17 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
                 body: JSON.stringify(mac),
                 headers: { "Content-Type": "application/json" }
             }
-        ).then((response) => {
+        ).then(async (response) => {
             setConnectionChanging(false);
             if (response.status === 200) { 
-                setSuccessOpen(true);
+                setSnackbarState({open: true, severity: "success", message: "Connected device!"});
             } else {
-                setFailureOpen(true);
+                let error = await response.json();
+                setSnackbarState({open: true, severity: "error", message: error});
             }
         }).catch((err) => {
             setConnectionChanging(false);
-            setFailureOpen(true);
+            setSnackbarState({open: true, severity: "error", message: err});
         });
     };
 
@@ -40,16 +40,17 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
                 body: JSON.stringify(mac),
                 headers: { "Content-Type": "application/json" }
             }
-        ).then((response) => {
+        ).then(async (response) => {
             setConnectionChanging(false);
             if (response.status === 200) {
-                setSuccessOpen(true);
+                setSnackbarState({open: true, severity: "success", message: "Disconnected device!"});
             } else {
-                setFailureOpen(true);
+                let error = await response.json();
+                setSnackbarState({open: true, severity: "error", message: error});
             } 
         }).catch((err) => {
             setConnectionChanging(false);
-            setFailureOpen(true);
+            setSnackbarState({open: true, severity: "success", message: err});
         });
     };
 
@@ -59,17 +60,9 @@ export default function BtDeviceItem(props: {device: BtDevice }) {
             <Button variant="contained" startIcon={<BluetoothConnected/>} onClick={() => onConnectClick(props.device.mac)} disabled={connectionChanging}>Connect</Button>
             : <Button variant="contained" startIcon={<Close/>} color="error" onClick={() => onDisconnectClick(props.device.mac)} disabled={connectionChanging}>Disconnect</Button>
         }>
-            <Snackbar open={successOpen} autoHideDuration={3000}>
-                <Alert severity="success">
-                    <AlertTitle>Success</AlertTitle>
-                    Device is now connected.
-                </Alert>
-            </Snackbar>
-
-            <Snackbar open={failureOpen} autoHideDuration={3000}>
-                <Alert severity="error">
-                    <AlertTitle>Failed</AlertTitle>
-                    Failed to disconnect device
+            <Snackbar open={snackBarState.open} autoHideDuration={3000}>
+                <Alert severity={snackBarState.severity}>
+                    <AlertTitle>{snackBarState.message}</AlertTitle>
                 </Alert>
             </Snackbar>
 
