@@ -1,26 +1,23 @@
-import { AppBar, Box, Card, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
-import { ThreeDRotation } from '@mui/icons-material';
+import { AppBar, Box, Card, LinearProgress, List, Stack, Typography } from "@mui/material";
+import BtDevice from "../models/bt_device";
+import BtDeviceItem from "./BtDeviceItem";
 
-function TitleBar(props: { isDiscovering: boolean; devices: [{name: string, mac: string, conn_status: string}] | undefined }) {
+function TitleBar(props: { isDiscovering: boolean; devices: [BtDevice] | undefined }) {
     let list;
     if (props.devices === undefined) {
         list = (
             <Typography variant="subtitle2">Searching...</Typography>
         );
     } else {
-        list = props.devices.map((device) => {
-            return (
-                <ListItem>
-                    <ListItemAvatar>
-                        <ThreeDRotation/>
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={device.name}
-                        secondary={device.mac}
-                    />
-                </ListItem>
-            )
-        })
+        list = props.devices
+            .filter((dev) => dev.name !== "Unnamed device")
+            .sort((a, b) => { return a.name.localeCompare(b.name); })
+            .map((device) => {
+                return (
+                    <BtDeviceItem device={device}></BtDeviceItem>
+                );
+            }
+        );
     }
     
     return (
@@ -41,10 +38,10 @@ function TitleBar(props: { isDiscovering: boolean; devices: [{name: string, mac:
             <Box sx={{
                 maxWidth: 600,
                 minWidth: 300,
-                width: "50%",
+                width: "95%",
             }}>
                 <Card
-                    sx={{ padding: "10px" }}
+                    sx={{ padding: "10px", margin: "10px" }}
                 >
                     <Stack direction="row">
                         <Typography>Devices</Typography>

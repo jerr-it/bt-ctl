@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import TitleBar from './components/TitleBar';
+import BtDevice from './models/bt_device';
 
 function App() {
   const [discovering, setDiscovering] = useState(false);
-  const [devices, setDevices] = useState<[{name: string, mac: string, conn_status: string}]>();
+  const [devices, setDevices] = useState<[BtDevice]>();
 
   useEffect(() => {
     fetch(
